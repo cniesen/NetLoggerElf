@@ -1,0 +1,2 @@
+Fonts are from https://code.google.com/archive/p/i3project/ and is advertised as being in the 
+public domain (see [UNLICENSE.txt](https://github.com/cniesen/NetLoggerElf/blob/master/src/main/resources/fonts/UNLICENSE.txt)).

@@ -1,0 +1,26 @@
+plugins {
+	id "org.springframework.boot" version "2.2.2.RELEASE"
+	id "io.spring.dependency-management" version "1.0.8.RELEASE"
+	id "java"
+}
+
+group = "com.niesen"
+version = "0.0.1-SNAPSHOT"
+sourceCompatibility = "1.8"
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation "com.opencsv:opencsv:5.0"
+	implementation "info.picocli:picocli-spring-boot-starter:4.1.4"
+	implementation "org.apache.pdfbox:pdfbox:2.0.18"
+	testImplementation("org.springframework.boot:spring-boot-starter-test") {
+		exclude group: "org.junit.vintage", module: "junit-vintage-engine"
+	}
+}
+
+test {
+	useJUnitPlatform()
+}
