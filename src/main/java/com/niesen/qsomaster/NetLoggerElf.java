@@ -1,62 +1,113 @@
 package com.niesen.qsomaster;
 
 import com.opencsv.bean.CsvToBeanBuilder;
-import com.opencsv.exceptions.CsvValidationException;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ResourceUtils;
+import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 
 @Component
-@Command(name = "qsomaster", mixinStandardHelpOptions = true, description = "\nNetLoggerElf takes the CSV file from NetLogger to create QSL Cards and an ADIF file for importing into other logging software\n", footer = "\nhttps://github.com/cniesen/NetLoggerElf")
+@Command(name = "NetLoggerElf", mixinStandardHelpOptions = true, defaultValueProvider = CommandLine.PropertiesDefaultProvider.class, description = "\nNetLoggerElf takes the CSV file from NetLogger to create QSL Cards and an ADIF file for importing into other logging software\n", footer = "\nhttps://github.com/cniesen/NetLoggerElf")
 public class NetLoggerElf implements Callable<Integer> {
-
-    private boolean hasErrors = false;
-
     private QslCardService qslCardService;
 
-    @Option(names = {"-i", "--qso-input"}, defaultValue = "qso.csv", paramLabel ="<qso.csv>", description = "Filename of the exported csv file from NetLogger (default: ${DEFAULT-VALUE})")
-    private File qsos;
+    @Option(names = {"-i", "--contacts-file"}, defaultValue = "contacts.csv", paramLabel = "<contacts.csv>", description = "Exported contacts CSV file from NetLogger. (default: ${DEFAULT-VALUE})")
+    private File fileQsos;
 
-    @Option(names = {"-t", "--qsl-template"}, defaultValue = "qsl-template.jpg", paramLabel ="<qsl-template.jpg>", description = "Filename of the 5.5 x 3.5 inch image template of the QSL card (default: ${DEFAULT-VALUE})")
-    private File qslTemplate;
+    @Option(names = {"-t", "--qsl-template"}, defaultValue = "qsl-template.jpg", paramLabel = "<qsl-template.jpg>", description = "QSL card template. A 5.5 x 3.5 inch jpg image. (default: ${DEFAULT-VALUE})")
+    private File fileQslTemplate;
+
+    @Option(names = {"--qsl-font-text-file"}, hidden = true, paramLabel = "<trim.ttf>", description = "Custom text font on QSL card.")
+    private File fontTextFile = ResourceUtils.getFile("src/main/resources/fonts/trim.ttf");
+
+    @Option(names = {"--qsk-font-text-size"}, hidden = true, defaultValue = "10", description = "Custom text size on QSL card.")
+    int fontTextSize;
+
+    @Option(names = {"--qsl-font-text-leading"}, hidden = true, defaultValue = "12", description = "Custom text size on QSL card.")
+    int fontTestLeading;
+
+    @Option(names = {"--qsl-font-text-character-spacing"}, hidden = true, defaultValue = "0", description = "Custom text size on QSL card.")
+    int fontTextCharacterSpacing;
+
+    @Option(names = {"--qsl-font-text-bold"}, hidden = true, defaultValue = "false", description = "Custom text boldness on QSL card. (true/false)")
+    boolean fontTextBold;
+
+    @Option(names = {"--qsl-font-callsign-file"}, hidden = true, paramLabel = "<trim.ttf>", description = "Custom callsign font on QSL card.")
+    private File fontCallsignFile = ResourceUtils.getFile("src/main/resources/fonts/cruft.ttf");
+
+    @Option(names = {"--qsl-font-callsign-size"}, hidden = true, defaultValue = "16", description = "Custom callsign size on QSL card.")
+    int fontCallsignSize;
+
+    @Option(names = {"--qsl-font-callsign-leading"}, hidden = true, defaultValue = "16", description = "Custom callsign size on QSL card.")
+    int fontCallsignLeading;
+
+    @Option(names = {"--qsl-font-callsign-character-spacing"}, hidden = true, defaultValue = "0", description = "Custom callsign size on QSL card.")
+    int fontCallsignCharacterSpacing;
+
+    @Option(names = {"--qsl-font-callsign-bold"}, hidden = true, defaultValue = "true", description = "Custom callsign boldness on QSL card. (true/false)")
+    boolean fontCallsignBold;
+
+    @Option(names = {"--qsl-paper-size"}, hidden = true, defaultValue = "qslCard", description = "Paper size on which the QSL cards are printed. Valid options are: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE})")
+    private PaperSize paperSize;
 
     @Option(names = {"-q", "--qsl-output"}, paramLabel ="<qsl-cards.pdf>", description = "Filename of the PDF file of the QSL cards (default: qsl-cards-ccyy-mm-dd-hh-mm-ss.pdf)")
-    private File qslOutput;
-
-    @Option(names = {"-m"}, description = "Print multiple cards on a Letter sized page")
-    private boolean multipleCardsPerPage;
-
-    @Option(names = {"-p"}, defaultValue = "qslCard", description = "Paper size on which the QSL cards are printed. Valid options are: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE})")
-    private PaperSize paperSize;
+    private File fileQslOutput;
 
     private Font fontText;
     private Font fontCallsign;
 
-    @Override
-    public Integer call() throws IOException, CsvValidationException {
-        validate();
-        qslCardService = new QslCardService(qslTemplate, paperSize, fontText, fontCallsign);
+    public NetLoggerElf() throws FileNotFoundException {
+    }
 
-        new CsvToBeanBuilder<NetLoggerQso>(new FileReader(qsos))
+    @Override
+    public Integer call() throws IOException {
+        if (!valid()) {
+            return -1;
+        };
+
+        qslCardService = new QslCardService(fileQslTemplate, paperSize, fontText, fontCallsign);
+
+        new CsvToBeanBuilder<NetLoggerQso>(new FileReader(fileQsos))
                 .withType(NetLoggerQso.class)
                 .build()
                 .stream()
                 .forEach(qslCardService::printCard);
 
-        qslCardService.save(qslOutput);
+        qslCardService.save(fileQslOutput);
         return 33;
     }
 
-    private boolean validate() throws IOException {
+    private boolean valid() {
         boolean valid = true;
-        fontText = new Font(ResourceUtils.getFile("src/main/resources/fonts/trim.ttf"), 10, 12, 0, false);
-        fontCallsign = new Font(ResourceUtils.getFile("src/main/resources/fonts/cruft.ttf"), 16, 16, 2, true);
+
+        if (!fileQsos.exists()) {
+            System.err.println("ERROR: Contacts CSV file " + fileQsos.getName() + " not found");
+            valid = false;
+        }
+
+        if (!fileQslTemplate.exists()) {
+            System.err.println("ERROR: QSL template file " + fileQslTemplate.getName() + " not found");
+            valid = false;
+        }
+
+        fontText = new Font(fontTextFile, fontTextSize, fontTestLeading, fontTextCharacterSpacing, fontTextBold);
+        valid &= fontText.validFontFile();
+
+        fontCallsign = new Font(fontCallsignFile, fontCallsignSize, fontCallsignLeading, fontCallsignCharacterSpacing, fontCallsignBold);
+        valid &= fontCallsign.validFontFile();
+
+        if (paperSize == null) {
+            System.err.println("ERROR: No QSL paper size specified.");
+            valid = false;
+        }
+
         return valid;
     }
 

@@ -25,6 +25,15 @@ public class Font {
         this.bold = bold;
     }
 
+    public boolean validFontFile() {
+        if (fontFile.exists()) {
+            return true;
+        } else {
+            System.err.println("ERROR: Font file " + fontFile.getName() + " not found");
+            return false;
+        }
+    }
+
     public Font init(PDDocument document) throws IOException {
         font = PDType0Font.load(document, fontFile);
         return this;

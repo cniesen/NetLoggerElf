@@ -131,7 +131,7 @@ public class QslCardService {
     public void save(File qslOutput) throws IOException {
         if (qslOutput == null) {
             Instant utcTimestamp = Instant.now();
-            doc.save("qsl-cards-" + DateTimeFormatter.ofPattern("yyyy-MM-dd-hh-mm-ss").withZone(ZoneId.of("UTC")).format(utcTimestamp) + "pdf");
+            doc.save("qsl-cards-" + DateTimeFormatter.ofPattern("yyyy-MM-dd-hh-mm-ss").withZone(ZoneId.of("UTC")).format(utcTimestamp) + ".pdf");
         } else {
             doc.save(qslOutput);
         }
