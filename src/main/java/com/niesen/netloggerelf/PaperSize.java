@@ -1,4 +1,4 @@
-package com.niesen.qsomaster;
+package com.niesen.netloggerelf;
 
 public enum PaperSize {
     qslCard,

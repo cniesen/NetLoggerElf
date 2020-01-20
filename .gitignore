@@ -30,3 +30,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Application Development Specific ###
+qsl-cards-*.pdf

@@ -1,4 +1,4 @@
-package com.niesen.qsomaster;
+package com.niesen.netloggerelf;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -61,5 +61,8 @@ public class Font {
         contentStream.setLeading(leading);
     }
 
+    public float textWidthOf(String text) throws IOException {
+        return fontSize * font.getStringWidth(text) / 1000;
+    }
 
 }

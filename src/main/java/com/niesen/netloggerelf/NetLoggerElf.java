@@ -1,4 +1,4 @@
-package com.niesen.qsomaster;
+package com.niesen.netloggerelf;
 
 import com.opencsv.bean.CsvToBeanBuilder;
 import org.springframework.stereotype.Component;
@@ -40,7 +40,7 @@ public class NetLoggerElf implements Callable<Integer> {
     boolean fontTextBold;
 
     @Option(names = {"--qsl-font-callsign-file"}, hidden = true, paramLabel = "<trim.ttf>", description = "Custom callsign font on QSL card.")
-    private File fontCallsignFile = ResourceUtils.getFile("src/main/resources/fonts/cruft.ttf");
+    private File fontCallsignFile = ResourceUtils.getFile("src/main/resources/fonts/cruft-bold.ttf");
 
     @Option(names = {"--qsl-font-callsign-size"}, hidden = true, defaultValue = "16", description = "Custom callsign size on QSL card.")
     int fontCallsignSize;
@@ -51,10 +51,10 @@ public class NetLoggerElf implements Callable<Integer> {
     @Option(names = {"--qsl-font-callsign-character-spacing"}, hidden = true, defaultValue = "0", description = "Custom callsign size on QSL card.")
     int fontCallsignCharacterSpacing;
 
-    @Option(names = {"--qsl-font-callsign-bold"}, hidden = true, defaultValue = "true", description = "Custom callsign boldness on QSL card. (true/false)")
+    @Option(names = {"--qsl-font-callsign-bold"}, hidden = true, defaultValue = "false", description = "Custom callsign boldness on QSL card. (true/false)")
     boolean fontCallsignBold;
 
-    @Option(names = {"--qsl-paper-size"}, hidden = true, defaultValue = "qslCard", description = "Paper size on which the QSL cards are printed. Valid options are: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE})")
+    @Option(names = {"--qsl-paper-size"}, defaultValue = "qslCard", description = "Paper size on which the QSL cards are printed. Valid options are: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE})")
     private PaperSize paperSize;
 
     @Option(names = {"-q", "--qsl-output"}, paramLabel ="<qsl-cards.pdf>", description = "Filename of the PDF file of the QSL cards (default: qsl-cards-ccyy-mm-dd-hh-mm-ss.pdf)")
@@ -122,6 +122,5 @@ public class NetLoggerElf implements Callable<Integer> {
     private void createAdifRecord(NetLoggerQso netLoggerQso) {
 
     }
-
 
 }

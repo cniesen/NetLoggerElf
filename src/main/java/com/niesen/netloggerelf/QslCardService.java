@@ -1,7 +1,8 @@
-package com.niesen.qsomaster;
+package com.niesen.netloggerelf;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDDocumentInformation;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
@@ -9,10 +10,10 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.Instant;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
+import java.util.ArrayList;
+import java.util.List;
 
 import static java.time.temporal.ChronoField.HOUR_OF_DAY;
 import static java.time.temporal.ChronoField.MINUTE_OF_HOUR;
@@ -20,7 +21,7 @@ import static java.time.temporal.ChronoField.MINUTE_OF_HOUR;
 public class QslCardService {
     private static final float POINTS_PER_INCH = 72;
 
-    private static PDDocument doc = new PDDocument();
+    private static PDDocument document = new PDDocument();
     private static Font fontText;
     private static Font fontCallsign;
     private static PDImageXObject pdImage;
@@ -32,11 +33,24 @@ public class QslCardService {
 
 
     public QslCardService(File qslTemplate, PaperSize paperSize, Font fontText, Font fontCallsign) throws IOException {
-        QslCardService.pdImage = PDImageXObject.createFromFileByExtension(qslTemplate, doc);
+        QslCardService.pdImage = PDImageXObject.createFromFileByExtension(qslTemplate, document);
+        addPdfMetaData(document);
 //            pdImage = JPEGFactory.createFromStream(doc, new FileInputStream(new File(qslTemplate)));
         QslCardService.paperSize = paperSize;
-        QslCardService.fontText = fontText.init(doc);
-        QslCardService.fontCallsign = fontCallsign.init(doc);
+        QslCardService.fontText = fontText.init(document);
+        QslCardService.fontCallsign = fontCallsign.init(document);
+    }
+
+    private void addPdfMetaData(PDDocument document) {
+        PDDocumentInformation documentInformation = document.getDocumentInformation();
+        documentInformation.setTitle("QSL Cards");
+        String application = NetLoggerElfMetaData.getApplicationName() + " "
+                + NetLoggerElfMetaData.getApplicationVersion()  + " ("
+                + NetLoggerElfMetaData.getApplicationHomePage() +")";
+        documentInformation.setCreator(application);
+        documentInformation.setProducer(application);
+        documentInformation.setCreationDate(NetLoggerElfMetaData.getApplicationStartCalendar());
+        documentInformation.setModificationDate(NetLoggerElfMetaData.getApplicationStartCalendar());
     }
 
     public void printCard(NetLoggerQso netLoggerQso) {
@@ -47,7 +61,7 @@ public class QslCardService {
             switch (cardOnPage) {
                 case 0:
                     page = new PDPage(new PDRectangle(11f * POINTS_PER_INCH, 8f * POINTS_PER_INCH));
-                    doc.addPage(page);
+                    document.addPage(page);
                     cardPositionX = 0;
                     cardPositionY = 252;
                     cardOnPage = 1;
@@ -71,16 +85,16 @@ public class QslCardService {
             }
         } else {
             page = new PDPage(new PDRectangle(5.5f * POINTS_PER_INCH, 3.5f * POINTS_PER_INCH));
-            doc.addPage(page);
+            document.addPage(page);
             cardPositionX = 0;
             cardPositionY = 0;
         }
 
-        try (PDPageContentStream contents = new PDPageContentStream(doc, page, PDPageContentStream.AppendMode.APPEND, true)) {
+        try (PDPageContentStream contents = new PDPageContentStream(document, page, PDPageContentStream.AppendMode.APPEND, true)) {
             contents.drawImage(pdImage, cardPositionX, cardPositionY, 5.5f * POINTS_PER_INCH, 3.5f * POINTS_PER_INCH);
 
             contents.beginText();
-            contents.newLineAtOffset(cardPositionX + 10, cardPositionY + 100);
+            contents.newLineAtOffset(cardPositionX + 10, cardPositionY + 120);
             fontText.useFor(contents);
             fontCallsign.nextFor(contents);
             contents.showText("Confirming QSO with");
@@ -105,20 +119,16 @@ public class QslCardService {
             contents.endText();
 
             contents.beginText();
-            contents.newLineAtOffset(cardPositionX + 200, cardPositionY + 100);
+            contents.newLineAtOffset(cardPositionX + 200, cardPositionY + 120);
             fontText.useFor(contents);
             fontText.nextFor(contents);
-//                    netLoggerQso.setQslMessage("Something really long to see what happens when we print this on the card.  Does it wrap lines or just drop off?");
-//                    netLoggerQso.setQslMessage("Something really long to see what happens when we print this on the card.  Does it wrap lines");
-//                    System.out.println("size " + fontCalibri.getStringWidth(netLoggerQso.getQslMessage()) + " " + fontCalibri.getStringWidth(netLoggerQso.getQslMessage()) * 10 / 1000 );
             if (StringUtils.isNotBlank(netLoggerQso.getQslMessage())) {
-                //ToDo: wrap test via https://github.com/mkl-public/testarea-pdfbox2/blob/master/src/test/java/mkl/testarea/pdfbox2/content/BreakLongString.java#L39
-                contents.showText(netLoggerQso.getQslMessage());
+                showWrappedText(netLoggerQso.getQslMessage(), 186, contents,fontText);
                 contents.newLine();
             }
             contents.showText("Thanks for the contact on the");
             contents.newLine();
-            contents.showText(netLoggerQso.getNetName());
+            showWrappedText(netLoggerQso.getNetName(), 186, contents,fontText);
             contents.newLine();
             contents.newLine();
             contents.showText("73,");
@@ -128,12 +138,53 @@ public class QslCardService {
         }
     }
 
-    public void save(File qslOutput) throws IOException {
-        if (qslOutput == null) {
-            Instant utcTimestamp = Instant.now();
-            doc.save("qsl-cards-" + DateTimeFormatter.ofPattern("yyyy-MM-dd-hh-mm-ss").withZone(ZoneId.of("UTC")).format(utcTimestamp) + ".pdf");
-        } else {
-            doc.save(qslOutput);
+    /**
+     * Credit goes to:
+     * https://github.com/mkl-public/testarea-pdfbox2/blob/master/src/test/java/mkl/testarea/pdfbox2/content/BreakLongString.java#L39
+     */
+    public void showWrappedText(String text, float width,PDPageContentStream contents, Font font) throws IOException {
+        List<String> lines = new ArrayList<String>();
+
+        int lastSpace = -1;
+        while (text.length() > 0) {
+            int spaceIndex = text.indexOf(' ', lastSpace + 1);
+            if (spaceIndex < 0) {
+                spaceIndex = text.length();
+            }
+            String subString = text.substring(0, spaceIndex);
+            if (font.textWidthOf(subString) > width) {
+                if (lastSpace < 0) {
+                    lastSpace = spaceIndex;
+                }
+                subString = text.substring(0, lastSpace);
+                lines.add(subString);
+                text = text.substring(lastSpace).trim();
+                lastSpace = -1;
+            } else if (spaceIndex == text.length()) {
+                lines.add(text);
+                text = "";
+            } else {
+                lastSpace = spaceIndex;
+            }
+        }
+
+        boolean isLinebreakNeeded = false;
+        for (String line: lines)
+        {
+            if (isLinebreakNeeded) {
+                contents.newLine();
+            }
+            contents.showText(line);
+            isLinebreakNeeded = true;
         }
     }
+
+    public void save(File qslOutput) throws IOException {
+        if (qslOutput == null) {
+            document.save("qsl-cards-" + NetLoggerElfMetaData.getFormattedApplicationStartTimestamp() + ".pdf");
+        } else {
+            document.save(qslOutput);
+        }
+    }
+
 }
