@@ -5,19 +5,19 @@ import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.apache.pdfbox.pdmodel.graphics.state.RenderingMode;
+import org.springframework.core.io.Resource;
 
-import java.io.File;
 import java.io.IOException;
 
 public class Font {
-    private File fontFile;
+    private Resource fontFile;
     private PDFont font;
     private int fontSize;
     private int leading;
     private int characterSpacing;
     private boolean bold;
 
-    public Font(File fontFile, int fontSize, int leading, int characterSpacing, boolean bold) {
+    public Font(Resource fontFile, int fontSize, int leading, int characterSpacing, boolean bold) {
         this.fontFile = fontFile;
         this.fontSize = fontSize;
         this.leading = leading;
@@ -26,22 +26,22 @@ public class Font {
     }
 
     public boolean validFontFile() {
-        if (fontFile.exists()) {
+        if (fontFile.isReadable()) {
             return true;
         } else {
-            System.err.println("ERROR: Font file " + fontFile.getName() + " not found");
+            System.err.println("ERROR: Font file " + fontFile.getFilename() + " not found");
             return false;
         }
     }
 
     public Font init(PDDocument document) throws IOException {
-        font = PDType0Font.load(document, fontFile);
+        font = PDType0Font.load(document, fontFile.getInputStream());
         return this;
     }
 
     public void useFor(PDPageContentStream contentStream) throws IOException {
         if (font == null) {
-            throw new RuntimeException("Font " + fontFile.getName() + " needs to be initialized before use.");
+            throw new RuntimeException("Font " + fontFile.getFilename() + " needs to be initialized before use.");
         }
 
         contentStream.setFont(font, fontSize);
