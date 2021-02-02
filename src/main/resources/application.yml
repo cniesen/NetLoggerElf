@@ -1,5 +1,5 @@
 spring:
   profiles:
-    active: dev
+    active: prod
 netLoggerElf:
   homePage: https://github.com/cniesen/NetLoggerElf

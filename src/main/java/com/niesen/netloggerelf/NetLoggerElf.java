@@ -1,14 +1,14 @@
 package com.niesen.netloggerelf;
 
 import com.opencsv.bean.CsvToBeanBuilder;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.stereotype.Component;
-import org.springframework.util.ResourceUtils;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.concurrent.Callable;
@@ -25,7 +25,7 @@ public class NetLoggerElf implements Callable<Integer> {
     private File fileQslTemplate;
 
     @Option(names = {"--qsl-font-text-file"}, hidden = true, paramLabel = "<trim.ttf>", description = "Custom text font on QSL card.")
-    private File fontTextFile = ResourceUtils.getFile("src/main/resources/fonts/trim.ttf");
+    private File fontTextFile;
 
     @Option(names = {"--qsk-font-text-size"}, hidden = true, defaultValue = "10", description = "Custom text size on QSL card.")
     int fontTextSize;
@@ -40,7 +40,7 @@ public class NetLoggerElf implements Callable<Integer> {
     boolean fontTextBold;
 
     @Option(names = {"--qsl-font-callsign-file"}, hidden = true, paramLabel = "<trim.ttf>", description = "Custom callsign font on QSL card.")
-    private File fontCallsignFile = ResourceUtils.getFile("src/main/resources/fonts/cruft-bold.ttf");
+    private File fontCallsignFile;
 
     @Option(names = {"--qsl-font-callsign-size"}, hidden = true, defaultValue = "16", description = "Custom callsign size on QSL card.")
     int fontCallsignSize;
@@ -63,14 +63,14 @@ public class NetLoggerElf implements Callable<Integer> {
     private Font fontText;
     private Font fontCallsign;
 
-    public NetLoggerElf() throws FileNotFoundException {
+    public NetLoggerElf() {
     }
 
     @Override
     public Integer call() throws IOException {
         if (!valid()) {
             return -1;
-        };
+        }
 
         qslCardService = new QslCardService(fileQslTemplate, paperSize, fontText, fontCallsign);
 
@@ -97,10 +97,18 @@ public class NetLoggerElf implements Callable<Integer> {
             valid = false;
         }
 
-        fontText = new Font(fontTextFile, fontTextSize, fontTestLeading, fontTextCharacterSpacing, fontTextBold);
+        if(fontTextFile != null) {
+            fontText = new Font(new FileSystemResource(fontTextFile), fontTextSize, fontTestLeading, fontTextCharacterSpacing, fontTextBold);
+        } else {
+            fontText = new Font(new ClassPathResource("fonts/trim.ttf"), fontTextSize, fontTestLeading, fontTextCharacterSpacing, fontTextBold);
+        }
         valid &= fontText.validFontFile();
 
-        fontCallsign = new Font(fontCallsignFile, fontCallsignSize, fontCallsignLeading, fontCallsignCharacterSpacing, fontCallsignBold);
+        if (fontCallsignFile != null) {
+            fontCallsign = new Font(new FileSystemResource(fontCallsignFile), fontCallsignSize, fontCallsignLeading, fontCallsignCharacterSpacing, fontCallsignBold);
+        } else {
+            fontCallsign = new Font(new ClassPathResource("fonts/cruft-bold.ttf"), fontCallsignSize, fontCallsignLeading, fontCallsignCharacterSpacing, fontCallsignBold);
+        }
         valid &= fontCallsign.validFontFile();
 
         if (paperSize == null) {
