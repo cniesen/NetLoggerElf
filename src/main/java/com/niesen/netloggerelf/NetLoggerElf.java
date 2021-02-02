@@ -54,7 +54,7 @@ public class NetLoggerElf implements Callable<Integer> {
     @Option(names = {"--qsl-font-callsign-bold"}, hidden = true, defaultValue = "false", description = "Custom callsign boldness on QSL card. (true/false)")
     boolean fontCallsignBold;
 
-    @Option(names = {"--qsl-paper-size"}, defaultValue = "qslCard", description = "Paper size on which the QSL cards are printed. Valid options are: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE})")
+    @Option(names = {"--qsl-paper-size"}, defaultValue = "letter", description = "Paper size on which the QSL cards are printed. Valid options are: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE})")
     private PaperSize paperSize;
 
     @Option(names = {"-q", "--qsl-output"}, paramLabel ="<qsl-cards.pdf>", description = "Filename of the PDF file of the QSL cards (default: qsl-cards-ccyy-mm-dd-hh-mm-ss.pdf)")
