@@ -1,5 +1,22 @@
-package com.niesen.netloggerelf;
+/*
+	Claus' NetLogger Elf
+	Copyright (C) 2020  Claus Niesen
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+	You should have received a copy of the GNU General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
+package com.niesens.netloggerelf;
+
+import com.niesens.netloggerelf.enumerations.PaperSize;
+import com.niesens.netloggerelf.options.Options;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentInformation;
@@ -7,8 +24,10 @@ import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.stereotype.Service;
 
-import java.io.File;
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
@@ -18,31 +37,47 @@ import java.util.List;
 import static java.time.temporal.ChronoField.HOUR_OF_DAY;
 import static java.time.temporal.ChronoField.MINUTE_OF_HOUR;
 
+@Service
 public class QslCardService {
     private static final float POINTS_PER_INCH = 72;
+    private final Options options;
 
-    private static PDDocument document = new PDDocument();
+    private static final PDDocument document = new PDDocument();
     private static Font fontText;
     private static Font fontCallsign;
     private static PDImageXObject pdImage;
-    private static PaperSize paperSize;
 
     private int cardOnPage = 0;
 
     private PDPage page = null;
 
 
-    public QslCardService(File qslTemplate, PaperSize paperSize, Font fontText, Font fontCallsign) throws IOException {
-        QslCardService.pdImage = PDImageXObject.createFromFileByExtension(qslTemplate, document);
-        addPdfMetaData(document);
-//            pdImage = JPEGFactory.createFromStream(doc, new FileInputStream(new File(qslTemplate)));
-        QslCardService.paperSize = paperSize;
-        QslCardService.fontText = fontText.init(document);
-        QslCardService.fontCallsign = fontCallsign.init(document);
+    public QslCardService(Options options) {
+        this.options = options;
     }
 
-    private void addPdfMetaData(PDDocument document) {
-        PDDocumentInformation documentInformation = document.getDocumentInformation();
+    public void initialize() throws IOException {
+        QslCardService.pdImage = PDImageXObject.createFromFile(options.getQslCard().getTemplate(), document);
+        addPdfMetaData();
+
+        if(StringUtils.isNotBlank(options.getQslCard().getText().getFontFile())) {
+            fontText = new Font(new FileSystemResource(options.getQslCard().getText().getFontFile()), options.getQslCard().getText().getSize(), options.getQslCard().getText().getLeading(), options.getQslCard().getText().getCharacterSpacing(), options.getQslCard().getText().getBold());
+        } else {
+            fontText = new Font(new ClassPathResource("fonts/trim.ttf"), options.getQslCard().getText().getSize(), options.getQslCard().getText().getLeading(), options.getQslCard().getText().getCharacterSpacing(), options.getQslCard().getText().getBold());
+        }
+
+        if (StringUtils.isNotBlank(options.getQslCard().getCallsign().getFontFile())) {
+            fontCallsign = new Font(new FileSystemResource(options.getQslCard().getCallsign().getFontFile()), options.getQslCard().getCallsign().getSize(), options.getQslCard().getCallsign().getLeading(), options.getQslCard().getCallsign().getCharacterSpacing(), options.getQslCard().getCallsign().getBold());
+        } else {
+            fontCallsign = new Font(new ClassPathResource("fonts/cruft-bold.ttf"), options.getQslCard().getCallsign().getSize(), options.getQslCard().getCallsign().getLeading(), options.getQslCard().getCallsign().getCharacterSpacing(), options.getQslCard().getCallsign().getBold());
+        }
+
+        QslCardService.fontText = fontText.init(document);
+        QslCardService.fontCallsign = fontCallsign.init(document);
+   }
+
+    private void addPdfMetaData() {
+        PDDocumentInformation documentInformation = QslCardService.document.getDocumentInformation();
         documentInformation.setTitle("QSL Cards");
         String application = NetLoggerElfMetaData.getApplicationName() + " "
                 + NetLoggerElfMetaData.getApplicationVersion()  + " ("
@@ -57,7 +92,7 @@ public class QslCardService {
         int cardPositionX;
         int cardPositionY;
 
-        if (paperSize == PaperSize.letter) {
+        if (options.getQslCard().getPaperSize() == PaperSize.letter) {
             switch (cardOnPage) {
                 case 0:
                     page = new PDPage(new PDRectangle(11f * POINTS_PER_INCH, 8f * POINTS_PER_INCH));
@@ -143,7 +178,7 @@ public class QslCardService {
      * https://github.com/mkl-public/testarea-pdfbox2/blob/master/src/test/java/mkl/testarea/pdfbox2/content/BreakLongString.java#L39
      */
     public void showWrappedText(String text, float width,PDPageContentStream contents, Font font) throws IOException {
-        List<String> lines = new ArrayList<String>();
+        List<String> lines = new ArrayList<>();
 
         int lastSpace = -1;
         while (text.length() > 0) {
@@ -179,11 +214,19 @@ public class QslCardService {
         }
     }
 
-    public void save(File qslOutput) throws IOException {
-        if (qslOutput == null) {
-            document.save("qsl-cards-" + NetLoggerElfMetaData.getFormattedApplicationStartTimestamp() + ".pdf");
-        } else {
-            document.save(qslOutput);
+    public void save() throws IOException {
+        if (!options.getQslCard().getEnabled()) {
+            return;
+        }
+
+        String fileName = options.getQslCard().getPdfName();
+        if (StringUtils.isBlank(fileName)) {
+            fileName = "qsl-cards-" + NetLoggerElfMetaData.getFormattedApplicationStartTimestamp() + ".pdf";
+        }
+        document.save(fileName);
+
+        if (!options.getQuiet()) {
+            System.out.println("Wrote ADIF file: " + fileName);
         }
     }
 
