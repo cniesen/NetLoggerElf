@@ -1,12 +1,15 @@
 plugins {
-	id "org.springframework.boot" version "2.4.2"
-	id "io.spring.dependency-management" version "1.0.11.RELEASE"
-	id "java"
+	id 'java'
+	id 'org.springframework.boot' version '3.2.0'
+	id 'io.spring.dependency-management' version '1.1.4'
 }
 
 group = "com.niesens"
 version = "1.0"
-sourceCompatibility = "1.8"
+
+java {
+	sourceCompatibility = '17'
+}
 
 repositories {
 	mavenCentral()
@@ -14,15 +17,15 @@ repositories {
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter'
-	implementation 'commons-io:commons-io:2.8.0'
-	implementation "com.opencsv:opencsv:5.3"
-	implementation "info.picocli:picocli-spring-boot-starter:4.6.1"
-	implementation "org.apache.pdfbox:pdfbox:2.0.22"
-    implementation 'junit:junit:4.12'
+	implementation 'commons-io:commons-io:2.15.1'
+	implementation 'com.opencsv:opencsv:5.9'
+	implementation 'info.picocli:picocli-spring-boot-starter:4.7.5'
+	implementation 'org.apache.pdfbox:pdfbox:3.0.1'
+    implementation 'junit:junit:4.13.2'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
-test {
+tasks.named('test') {
 	useJUnitPlatform()
 }
 
