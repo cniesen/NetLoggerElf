@@ -58,6 +58,8 @@ public class Adif {
         appendAdifField("MY_GRIDSQUARE", options.getAdif().getStation().getGrid());
         appendAdifField("MY_ITU_ZONE", options.getAdif().getStation().getItu());
         appendAdifField("MY_CQ_ZONE", options.getAdif().getStation().getCq());
+        appendQslSent(qso);
+        appendQslReceived(qso);
         appendAdifEor();
         return this;
     }
@@ -89,6 +91,27 @@ public class Adif {
     }
     private void appendAdifEor() {
         adif.append("<EOR>\n");
+    }
+
+    private void appendQslSent(NetLoggerQso qso) {
+        if (qso.isNoCardNeeded()) {
+            return;
+        }
+
+        appendAdifField("QSLSDATE", LocalDate.now());
+        appendAdifField("QSL_SENT", "Y");
+        if (qso.isBureau()) {
+            appendAdifField("QSL_SENT_VIA", "B");
+        } else {
+            appendAdifField("QSL_SENT_VIA", "D");
+        }
+    }
+
+    private void appendQslReceived(NetLoggerQso qso) {
+        if (qso.isQslReceived()) {
+            appendAdifField("QSLRDATE", LocalDate.now());
+            appendAdifField("QSL_RCVD", "Y");
+        }
     }
 
     public String toString() {

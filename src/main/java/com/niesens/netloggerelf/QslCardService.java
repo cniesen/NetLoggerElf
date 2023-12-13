@@ -89,6 +89,10 @@ public class QslCardService {
     }
 
     public void printCard(NetLoggerQso netLoggerQso) {
+        if (netLoggerQso.isNoCardNeeded()) {
+            return;
+        }
+
         int cardPositionX;
         int cardPositionY;
 

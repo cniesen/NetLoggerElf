@@ -51,6 +51,15 @@ public class NetLoggerQso {
     @CsvBindByName(column = "Net Name")
     private String netName;
 
+    @CsvBindByName(column = "QSL_S")
+    private String qslSent;
+
+    @CsvBindByName(column = "QSL_R")
+    private String qslReceived;
+
+    @CsvBindByName(column = "QSL Info")
+    private String qslInfo;
+
     @CsvBindByName(column = "QSL Message")
     private String qslMessage;
 
@@ -124,6 +133,50 @@ public class NetLoggerQso {
 
     public void setNetName(String netName) {
         this.netName = netName;
+    }
+
+     public String getQslSent() {
+        return qslSent;
+    }
+
+    public boolean isQslSent() {
+        return "Y".equals(qslSent);
+    }
+
+    public void setQslSent(String qslSent) {
+        this.qslSent = qslSent;
+    }
+
+    public String getQslReceived() {
+        return qslReceived;
+    }
+
+    public boolean isQslReceived() {
+        return "Y".equals(qslReceived);
+    }
+
+    public void setQslReceived(String qslReceived) {
+        this.qslReceived = qslReceived;
+    }
+
+    public String getQslInfo() {
+        return qslInfo;
+    }
+
+    public boolean isDirect() {
+        return qslInfo.contains("Direct");
+    }
+
+    public boolean isBureau() {
+        return qslInfo.contains("GIB");
+    }
+
+    public boolean isNoCardNeeded() {
+        return qslInfo.contains("NoCard");
+    }
+
+    public void setQslInfo(String qslInfo) {
+        this.qslInfo = qslInfo;
     }
 
     public String getQslMessage() {
