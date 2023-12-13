@@ -17,6 +17,7 @@ package com.niesens.netloggerelf;
 
 import com.opencsv.bean.CsvBindByName;
 import com.opencsv.bean.CsvDate;
+import org.apache.commons.lang3.StringUtils;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -163,16 +164,12 @@ public class NetLoggerQso {
         return qslInfo;
     }
 
-    public boolean isDirect() {
-        return qslInfo.contains("Direct");
-    }
-
     public boolean isBureau() {
-        return qslInfo.contains("GIB");
+        return StringUtils.equalsIgnoreCase(qslInfo, "GIB");
     }
 
     public boolean isNoCardNeeded() {
-        return qslInfo.contains("NoCard");
+        return StringUtils.startsWithIgnoreCase( qslInfo, "No Card") || StringUtils.startsWithIgnoreCase( qslInfo, "NoCard");
     }
 
     public void setQslInfo(String qslInfo) {

@@ -44,6 +44,7 @@ public class QslCardService {
 
     private static final PDDocument document = new PDDocument();
     private static Font fontText;
+    private static Font fontBureau;
     private static Font fontCallsign;
     private static PDImageXObject pdImage;
 
@@ -62,8 +63,10 @@ public class QslCardService {
 
         if(StringUtils.isNotBlank(options.getQslCard().getText().getFontFile())) {
             fontText = new Font(new FileSystemResource(options.getQslCard().getText().getFontFile()), options.getQslCard().getText().getSize(), options.getQslCard().getText().getLeading(), options.getQslCard().getText().getCharacterSpacing(), options.getQslCard().getText().getBold());
+            fontBureau = new Font(new FileSystemResource(options.getQslCard().getText().getFontFile()), 6, 10, 0, false);
         } else {
             fontText = new Font(new ClassPathResource("fonts/trim.ttf"), options.getQslCard().getText().getSize(), options.getQslCard().getText().getLeading(), options.getQslCard().getText().getCharacterSpacing(), options.getQslCard().getText().getBold());
+            fontBureau = new Font(new ClassPathResource("fonts/trim.ttf"), 6, 10, 0, false);
         }
 
         if (StringUtils.isNotBlank(options.getQslCard().getCallsign().getFontFile())) {
@@ -73,6 +76,7 @@ public class QslCardService {
         }
 
         QslCardService.fontText = fontText.init(document);
+        QslCardService.fontBureau = fontBureau.init(document);
         QslCardService.fontCallsign = fontCallsign.init(document);
    }
 
@@ -102,23 +106,23 @@ public class QslCardService {
                     page = new PDPage(new PDRectangle(11f * POINTS_PER_INCH, 8f * POINTS_PER_INCH));
                     document.addPage(page);
                     cardPositionX = 0;
-                    cardPositionY = 252;
+                    cardPositionY = 72 + 252;
                     cardOnPage = 1;
                     break;
                 case 1:
                     cardPositionX = 396;
-                    cardPositionY = 252;
+                    cardPositionY = 72 + 252;
                     cardOnPage = 2;
                     break;
                 case 2:
                     cardPositionX = 0;
-                    cardPositionY = 0;
+                    cardPositionY = 72 + 0;
                     cardOnPage = 3;
                     break;
                 case 3:
                 default:
                     cardPositionX = 396;
-                    cardPositionY = 0;
+                    cardPositionY = 72 + 0;
                     cardOnPage = 0;
                     break;
             }
@@ -172,6 +176,15 @@ public class QslCardService {
             contents.newLine();
             contents.showText("73,");
             contents.endText();
+
+            if (netLoggerQso.isBureau()) {
+                contents.beginText();
+                contents.newLineAtOffset(cardPositionX + 355, cardPositionY + 25);
+                fontBureau.useFor(contents);
+                fontBureau.nextFor(contents);
+                contents.showText("Bureau");
+                contents.endText();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
