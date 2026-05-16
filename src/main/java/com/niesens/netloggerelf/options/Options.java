@@ -31,6 +31,7 @@ public class Options {
     private String inputFileName;
     private AdifOptions adif = new AdifOptions();
     private QslCardOptions qslCard = new QslCardOptions();
+    private QslLabelOptions qslLabel = new QslLabelOptions();
 
     public Boolean getQuiet() {
         return quiet;
@@ -62,5 +63,13 @@ public class Options {
 
     public void setQslCard(QslCardOptions qslCard) {
         this.qslCard = qslCard;
+    }
+
+    public QslLabelOptions getQslLabel() {
+        return qslLabel;
+    }
+
+    public void setQslLabel(QslLabelOptions qslLabel) {
+        this.qslLabel = qslLabel;
     }
 }

@@ -51,6 +51,20 @@ public class OptionsValidator {
             valid = false;
         }
 
+        if (StringUtils.isNotBlank(options.getQslLabel().getText().getFontFile())
+                && !Files.isRegularFile(Paths.get(options.getQslLabel().getText().getFontFile()))) {
+            System.err.println("ERROR: Font file " + options.getQslLabel().getText().getFontFile() + " for text not found. "
+                    + "[qslLabel.text.fontFile]");
+            valid = false;
+        }
+
+        if (StringUtils.isNotBlank(options.getQslLabel().getCallsign().getFontFile())
+                && !Files.isRegularFile(Paths.get(options.getQslLabel().getCallsign().getFontFile()))) {
+            System.err.println("ERROR: Font file " + options.getQslLabel().getCallsign().getFontFile() + " for callsign not found. "
+                    + "[qslLabel.callsign.fontFile]");
+            valid = false;
+        }
+
         return valid;
     }
 }

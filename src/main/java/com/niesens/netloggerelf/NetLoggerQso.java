@@ -22,7 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-public class NetLoggerQso {
+public class NetLoggerQso  implements Comparable<NetLoggerQso> {
     @CsvBindByName(column = "Date")
     @CsvDate("yyyy/MM/dd")
     private LocalDate date;
@@ -182,5 +182,25 @@ public class NetLoggerQso {
 
     public void setQslMessage(String qslMessage) {
         this.qslMessage = qslMessage;
+    }
+
+    public int compareTo(NetLoggerQso qso) {
+        if (this.isBureau() != qso.isBureau()) {
+            return this.isBureau() ? -1 : 1;
+        } else if (this.isBureau()) {
+            String[] thisCall = this.getCallsign().split("((?=[0-9])|(?<=[0-9]))");
+            if (thisCall[1].charAt(0) == '0') {
+                thisCall[1] = "1" + thisCall[1];
+            }
+
+            String[] otherCall = qso.getCallsign().split("((?=[0-9])|(?<=[0-9]))");
+            if (otherCall[1].charAt(0) == '0') {
+                otherCall[1] = "1" + otherCall[1];
+            }
+
+            return !thisCall[1].equals(otherCall[1]) ? Integer.valueOf(thisCall[1]).compareTo(Integer.valueOf(otherCall[1])) : thisCall[2].compareTo(otherCall[2]);
+        } else {
+            return this.getCallsign().compareTo(qso.getCallsign());
+        }
     }
 }

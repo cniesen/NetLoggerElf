@@ -232,10 +232,6 @@ public class QslCardService {
     }
 
     public void save() throws IOException {
-        if (!options.getQslCard().getEnabled()) {
-            return;
-        }
-
         String fileName = options.getQslCard().getPdfName();
         if (StringUtils.isBlank(fileName)) {
             fileName = "qsl-cards-" + NetLoggerElfMetaData.getFormattedApplicationStartTimestamp() + ".pdf";

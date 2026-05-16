@@ -1,6 +1,6 @@
 /*
 	Claus' NetLogger Elf
-	Copyright (C) 2020  Claus Niesen
+	Copyright (C) 2026  Claus Niesen
 	This program is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
 	the Free Software Foundation, either version 3 of the License, or
@@ -15,13 +15,15 @@
 
 package com.niesens.netloggerelf.options;
 
-import com.niesens.netloggerelf.enumerations.PaperSize;
+import com.niesens.netloggerelf.enumerations.LabelType;
 
-public class QslCardOptions {
+public class QslLabelOptions {
     private Boolean enabled;
-    private String template;
-    private PaperSize paperSize;
+    private LabelType labelType;
     private String pdfName;
+    private String ccnAwards;
+    private int ccnAwardsOffset;
+    private String bureauIndicator;
     private Text text;
     private Text callsign;
     private Text bureau;
@@ -34,20 +36,12 @@ public class QslCardOptions {
         this.enabled = enabled;
     }
 
-    public String getTemplate() {
-        return template;
+    public LabelType getLabelType() {
+        return labelType;
     }
 
-    public void setTemplate(String template) {
-        this.template = template;
-    }
-
-    public PaperSize getPaperSize() {
-        return paperSize;
-    }
-
-    public void setPaperSize(PaperSize paperSize) {
-        this.paperSize = paperSize;
+    public void setLabelType(LabelType labelType) {
+        this.labelType = labelType;
     }
 
     public String getPdfName() {
@@ -56,6 +50,30 @@ public class QslCardOptions {
 
     public void setPdfName(String pdfName) {
         this.pdfName = pdfName;
+    }
+
+    public String getCcnAwards() {
+        return ccnAwards;
+    }
+
+    public void setCcnAwards(String ccnAwards) {
+        this.ccnAwards = ccnAwards;
+    }
+
+    public int getCcnAwardsOffset() {
+        return ccnAwardsOffset;
+    }
+
+    public void setCcnAwardsOffset(int ccnAwardsOffset) {
+        this.ccnAwardsOffset = ccnAwardsOffset;
+    }
+
+    public String getBureauIndicator() {
+        return bureauIndicator;
+    }
+
+    public void setBureauIndicator(String bureauIndicator) {
+        this.bureauIndicator = bureauIndicator;
     }
 
     public Text getText() {

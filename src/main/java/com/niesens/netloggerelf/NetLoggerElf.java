@@ -28,6 +28,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Scanner;
 
 @Component
 public class NetLoggerElf {
@@ -36,11 +37,13 @@ public class NetLoggerElf {
     private final Options options;
     private final AdifService adifService;
     private final QslCardService qslCardService;
+    private final QslLabelService qslLabelService;
 
-    public NetLoggerElf(Options options, AdifService adifService, QslCardService qslCardService) {
+    public NetLoggerElf(Options options, AdifService adifService, QslCardService qslCardService, QslLabelService qslLabelService) {
         this.options = options;
         this.adifService = adifService;
         this.qslCardService = qslCardService;
+        this.qslLabelService = qslLabelService;
     }
 
     public int execute() throws IOException {
@@ -53,25 +56,49 @@ public class NetLoggerElf {
             return -1;
         }
 
-        qslCardService.initialize();
+        if (this.options.getQslCard().getEnabled()) {
+            qslCardService.initialize();
+
+        }
+
+        if (this.options.getQslLabel().getEnabled()) {
+            this.qslLabelService.initialize();
+            int labelsToSkip = new Scanner(System.in).nextInt();
+            this.qslLabelService.skipLabels(labelsToSkip);
+        }
 
         new CsvToBeanBuilder<NetLoggerQso>(new FileReader(options.getInputFileName()))
                 .withType(NetLoggerQso.class)
                 .build()
                 .stream()
+                .sorted()
                 .forEach(this::processQso);
 
-        qslCardService.save();
+        if (this.options.getQslCard().getEnabled()) {
+            qslCardService.save();
+        }
+        if (this.options.getQslLabel().getEnabled()) {
+            this.qslLabelService.save();
+        }
         adifService.save();
-        adifService.send();
+        if (this.options.getAdif().getUdp().getEnabled()) {
+            adifService.send();
+        }
         createConfigFile();
 
         return 0;
     }
 
     private void processQso(NetLoggerQso netLoggerQso) {
-        qslCardService.printCard(netLoggerQso);
-        adifService.addAdifRecord(netLoggerQso);
+        if (this.options.getQslCard().getEnabled()) {
+            this.qslCardService.printCard(netLoggerQso);
+        }
+
+        if (this.options.getQslLabel().getEnabled()) {
+            this.qslLabelService.printLabel(netLoggerQso);
+        }
+
+        this.adifService.addAdifRecord(netLoggerQso);
     }
 
     private void printBanner() {
