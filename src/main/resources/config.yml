@@ -65,7 +65,7 @@ qslLabel:
   labelType: AVERY8163
   # Filename of the PDF file of the QSL labels (leave empty for default: qsl-labels-ccyy-mm-dd-hh-mm-ss.pdf)
   pdfName:
-  # 3905 CCN award received
+  # 3905 CCN award received (list, to support multiple lines)
   ccnAwards:
   # How many pixels lower the QSO text should be from the top of the label to avoid overriding the CCN Award text (default: 20)
   ccnAwardsOffset: 20
