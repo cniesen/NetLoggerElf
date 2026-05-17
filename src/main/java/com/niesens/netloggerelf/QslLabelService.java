@@ -143,12 +143,12 @@ public class QslLabelService {
             }
 
             int skipRows = this.labelOnPage / 2;
-            float labelPositionY = this.page.getMediaBox().getUpperRightY() - 36.0F - skipRows * 2.0F * 72.0F - 30.0F;
+            float labelPositionY = this.page.getMediaBox().getUpperRightY() - 28.0F - skipRows * 2.0F * 72.0F - 30.0F;
             float labelPositionX;
             if (this.labelOnPage % 2 == 0) {
-                labelPositionX = this.page.getMediaBox().getLowerLeftX() + 28.0F;
+                labelPositionX = this.page.getMediaBox().getLowerLeftX() + 16.0F;
             } else {
-                labelPositionX = this.page.getMediaBox().getLowerLeftX() + 334.0F;
+                labelPositionX = this.page.getMediaBox().getLowerLeftX() + 314.0F;
             }
 
             this.labelOnPage++;
@@ -158,18 +158,25 @@ public class QslLabelService {
 
             try {
                 PDPageContentStream contents = new PDPageContentStream(document, this.page, PDPageContentStream.AppendMode.APPEND, true);
+                int ccnAwardsOffset = 0;
 
                 try {
-                    if (StringUtils.isNotBlank(this.options.getQslLabel().getCcnAwards())) {
+                    if (!this.options.getQslLabel().getCcnAwards().isEmpty()) {
                         contents.beginText();
                         contents.newLineAtOffset(labelPositionX, labelPositionY);
                         fontText.useFor(contents);
-                        contents.showText(this.options.getQslLabel().getCcnAwards());
+                        fontText.nextFor(contents);
+                        for (String awardLine : this.options.getQslLabel().getCcnAwards()) {
+                            contents.showText(awardLine);
+                            contents.newLine();
+                            ccnAwardsOffset = ccnAwardsOffset + fontText.getLeading();
+                        }
+                        ccnAwardsOffset = ccnAwardsOffset + fontText.getLeading();
                         contents.endText();
                     }
 
                     contents.beginText();
-                    contents.newLineAtOffset(labelPositionX, labelPositionY - this.options.getQslLabel().getCcnAwardsOffset());
+                    contents.newLineAtOffset(labelPositionX, labelPositionY - ccnAwardsOffset);
                     fontText.useFor(contents);
                     fontCallsign.nextFor(contents);
                     contents.showText("Confirming QSO with");
@@ -201,7 +208,7 @@ public class QslLabelService {
                     contents.showText("RTS: " + netLoggerQso.getRstSent() + " sent / " + netLoggerQso.getRstReceived() + " received");
                     contents.endText();
                     contents.beginText();
-                    contents.newLineAtOffset(labelPositionX + 130.0F, labelPositionY - this.options.getQslLabel().getCcnAwardsOffset());
+                    contents.newLineAtOffset(labelPositionX + 130.0F, labelPositionY - ccnAwardsOffset);
                     fontText.useFor(contents);
                     fontText.nextFor(contents);
                     if (StringUtils.isNotBlank(netLoggerQso.getQslMessage())) {

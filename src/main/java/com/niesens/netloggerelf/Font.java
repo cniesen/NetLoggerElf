@@ -71,4 +71,8 @@ public class Font {
         return fontSize * font.getStringWidth(text) / 1000;
     }
 
+    public int getLeading() {
+        return leading;
+    }
+
 }

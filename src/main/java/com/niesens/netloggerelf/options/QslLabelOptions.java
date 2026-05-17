@@ -17,11 +17,13 @@ package com.niesens.netloggerelf.options;
 
 import com.niesens.netloggerelf.enumerations.LabelType;
 
+import java.util.List;
+
 public class QslLabelOptions {
     private Boolean enabled;
     private LabelType labelType;
     private String pdfName;
-    private String ccnAwards;
+    private List<String> ccnAwards;
     private int ccnAwardsOffset;
     private String bureauIndicator;
     private Text text;
@@ -52,11 +54,11 @@ public class QslLabelOptions {
         this.pdfName = pdfName;
     }
 
-    public String getCcnAwards() {
+    public List<String> getCcnAwards() {
         return ccnAwards;
     }
 
-    public void setCcnAwards(String ccnAwards) {
+    public void setCcnAwards(List<String> ccnAwards) {
         this.ccnAwards = ccnAwards;
     }
 

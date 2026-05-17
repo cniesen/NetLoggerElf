@@ -63,6 +63,7 @@ public class NetLoggerElf {
 
         if (this.options.getQslLabel().getEnabled()) {
             this.qslLabelService.initialize();
+            System.out.println("How many labels should be skipped on the first sheet? ");
             int labelsToSkip = new Scanner(System.in).nextInt();
             this.qslLabelService.skipLabels(labelsToSkip);
         }
