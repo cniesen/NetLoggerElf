@@ -70,6 +70,70 @@ qslCard:
     characterSpacing: 0
     # Use bold font for callsign on QSL card (true/false, default: false)
     bold: false
+  # Bureau indicator customization (advanced settings)
+  bureau:
+    # File name of the font to be used for the bureau indicator (leave empty for default font)
+    fontFile:
+    # Font size of bureau indicator on QSL card (integer, default: 6)
+    size: 6
+    # Font leading / line height of bureau indicator on QSL card (integer, default: 10)
+    leading: 10
+    # Character spacing for bureau indicator on QSL card (integer, default: 0)
+    characterSpacing: 0
+    # Use bold font for bureau indicator on QSL card (true/false, default: false)
+    bold: false
+
+# Configuration for printing QSL labels to PDF
+qslLabel:
+  # Enable printing of labels (true/false, default: false)
+  enabled: false
+  # Label sheet on which the QSL labels are printed (sqlCard/letter, default: AVERY8163)
+  labelType: AVERY8163
+  # Filename of the PDF file of the QSL labels (leave empty for default: qsl-labels-ccyy-mm-dd-hh-mm-ss.pdf)
+  pdfName:
+  # 3905 CCN award received (list, to support multiple lines)
+  ccnAwards:
+  # How many pixels lower the QSO text should be from the top of the label to avoid overriding the CCN Award text (default: 20)
+  ccnAwardsOffset: 20
+  # Text to display as the good in bureau indicator (default: Bureau)
+  bureauIndicator: Bureau
+
+  # Text customization (advanced settings)
+  text:
+    # File name of the font to be used for the text (leave empty for default font)
+    fontFile:
+    # Font size of callsign on QSL label (integer, default: 16)
+    size: 10
+    # Font leading / line height of text on QSL label (integer, default: 16)
+    leading: 12
+    # Character spacing for text on QSL label (integer, default: 0)
+    characterSpacing: 0
+    # Use bold font for text on QSL card (true/false, default: false)
+    bold: false
+  # Callsign customization (advanced settings)
+  callsign:
+    # File name of the font to be used for the callsign (leave empty for default font)
+    fontFile:
+    # Font size of callsign on QSL label (integer, default: 14)
+    size: 14
+    # Font leading / line height of callsign on QSL label (integer, default: 14)
+    leading: 14
+    # Character spacing for callsign on QSL label (integer, default: 0)
+    characterSpacing: 0
+    # Use bold font for callsign on QSL label (true/false, default: false)
+    bold: false
+  # Bureau indicator customization (advanced settings)
+  bureau:
+    # File name of the font to be used for the bureau indicator (leave empty for default font)
+    fontFile:
+    # Font size of bureau indicator on QSL label (integer, default: 6)
+    size: 6
+    # Font leading / line height of bureau indicator on QSL label (integer, default: 10)
+    leading: 10
+    # Character spacing for bureau indicator on QSL label (integer, default: 0)
+    characterSpacing: 0
+    # Use bold font for bureau indicator on QSL label (true/false, default: false)
+    bold: false
 
 # Configuration for ADIF logging
 adif:
